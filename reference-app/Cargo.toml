@@ -1,0 +1,47 @@
+[workspace]
+resolver = "3"
+members = ["."]
+
+[package]
+name = "df-pascal-web"
+description = "The reference app for df-pascal-core: Pascal's markets, books, trading, account, trading keys, deposits and withdrawals in the browser. Leptos, client-side only; Trunk builds it."
+version = "0.0.1-beta"
+edition = "2024"
+rust-version = "1.94"
+license = "BUSL-1.1"
+authors = ["Dennis Furrer"]
+publish = false
+
+[dependencies]
+df-pascal-core = { path = "../packages/core", default-features = false, features = ["sign", "web"] }
+leptos = { version = "0.8.21", features = ["csr"] }
+# 0.8.16 is the router released with leptos 0.8.21.
+leptos_router = "0.8.16"
+# Wraps the feed, which is not Send, for on_cleanup, which requires Send.
+send_wrapper = "0.6.0"
+wasm-bindgen = "=0.2.129"
+wasm-bindgen-futures = "0.4.79"
+js-sys = "0.3.106"
+web-sys = { version = "0.3.106", features = ["Storage", "Window", "Location", "Navigator", "Clipboard", "HtmlInputElement", "HtmlSelectElement"] }
+console_error_panic_hook = "0.1.7"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+
+[lints.rust]
+unsafe_code = "forbid"
+unused_must_use = "deny"
+
+[lints.clippy]
+float_arithmetic = "deny"
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+todo = "deny"
+dbg_macro = "deny"
+
+[profile.release]
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "debuginfo"

@@ -1,4 +1,4 @@
-check: fmt clippy wasm test features doc
+check: fmt clippy wasm test features doc app
 
 fmt:
     cargo fmt --all --check
@@ -33,3 +33,15 @@ features:
 
 doc:
     RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --all-features
+
+# Format check and lint of the reference app (wasm32).
+app:
+    cd reference-app && cargo fmt --check && cargo clippy --target wasm32-unknown-unknown -- -D warnings
+
+# Run the reference app at http://localhost:5173.
+serve:
+    cd reference-app && trunk serve --port 5173
+
+# Build the reference app and deploy it to Cloudflare Pages (project df-pascal-web).
+deploy-app:
+    cd reference-app && rm -rf dist && trunk build --release && wrangler pages deploy dist --project-name=df-pascal-web --branch main

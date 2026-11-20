@@ -111,7 +111,7 @@ let placed = trade::place(&client, &order).await?;
 | `cargo run -p df-pascal-core --example stream` | Keeps the busiest market's book from the websocket for 30 seconds and prints its trades |
 | `cargo run -p df-pascal-core --example place_order -- SYMBOL` | Prints a signed post-only bid one tick under the best bid; `--send` places and cancels it |
 
-The reference app is df-pascal-web, a separate Leptos project that uses every part of the SDK in a browser.
+The reference app is in [reference-app](reference-app): a Leptos frontend that uses every part of the SDK in a browser, deployed at https://df-pascal-web.pages.dev.
 
 ## Tests
 
@@ -124,8 +124,10 @@ packages/core
 
 | Command | What it runs |
 |---|---|
-| `just check` | format, lint, the browser transport for wasm, unit tests, the build without `sign`, docs |
+| `just check` | format, lint, the browser transport for wasm, unit tests, the build without `sign`, docs, the reference app's lint |
 | `just live` | the live suite against Pascal's production read API and market data socket |
+| `just serve` | the reference app at http://localhost:5173 |
+| `just deploy-app` | a release build of the reference app, deployed to Cloudflare Pages |
 
 <br>
 

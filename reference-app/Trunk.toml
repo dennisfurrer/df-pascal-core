@@ -1,0 +1,9 @@
+# `trunk serve --port 5173` for development, `trunk build --release` for Cloudflare Pages (dist/).
+
+[build]
+target = "index.html"
+dist = "dist"
+filehash = true
+
+[watch]
+ignore = ["dist"]

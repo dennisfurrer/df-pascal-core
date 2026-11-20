@@ -1,6 +1,8 @@
 [workspace]
 resolver = "3"
 members = ["packages/core"]
+# The reference app is its own workspace: wasm only, with its own lockfile.
+exclude = ["reference-app"]
 
 [workspace.package]
 version = "0.0.1-beta"
