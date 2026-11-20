@@ -8,7 +8,14 @@ use leptos_router::hooks::use_location;
 
 use crate::events::{self, EventGroup};
 use crate::fmt;
+use crate::icons::{Glyph, Icon};
 use crate::state::{MarketList, use_app, use_market_list};
+
+const REPO: &str = "https://github.com/dennisfurrer/df-pascal-core";
+const CRATE: &str = "https://crates.io/crates/df-pascal-core";
+
+/// GitHub's mark, from Primer Octicons (mark-github-16, MIT License, Copyright (c) GitHub Inc.).
+const GITHUB_MARK: &str = r#"<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656"/></svg>"#;
 
 const MARK: &str = r##"<svg aria-hidden="true" fill="none" viewBox="0 0 200 200"><defs><radialGradient cx="0" cy="0" gradientTransform="translate(100 169) rotate(-90) scale(93 66.4445)" gradientUnits="userSpaceOnUse" id="pascal-leg" r="1"><stop stop-color="#DB9C67"/><stop offset="0.977379" stop-color="#D35340"/></radialGradient><radialGradient cx="0" cy="0" gradientTransform="translate(200 54) rotate(180) scale(100 179.988)" gradientUnits="userSpaceOnUse" id="pascal-top" r="1"><stop stop-color="#DB9C67"/><stop offset="0.977379" stop-color="#D35340"/></radialGradient><radialGradient cx="0" cy="0" gradientTransform="translate(100 169) rotate(-90) scale(90 189.622)" gradientUnits="userSpaceOnUse" id="pascal-right" r="1"><stop stop-color="#DB9C67"/><stop offset="0.977379" stop-color="#D35340"/></radialGradient></defs><path d="M140 54.0932L100.003 31L60 54.0932L100.003 77.1923L140 54.0932Z" fill="url(#pascal-top)"/><path d="M100.003 123.01L100.003 123.379L140 100.286L140 54.0933L100.003 77.1923V123.01Z" fill="url(#pascal-right)"/><path d="M100.003 123.01L60 99.9165V146.103L100.003 169.202V123.01Z" fill="url(#pascal-leg)"/></svg>"##;
 
@@ -129,6 +136,14 @@ pub fn StatusBar() -> impl IntoView {
             }}</span>
             <span class="hide-narrow-flex">{move || if app.trading.get().is_some() { "Trading key held" } else { "No trading key" }}</span>
             <span class="hide-narrow-flex">"df-pascal-core"</span>
+            <span class="status-links">
+                <a href=REPO target="_blank" rel="noopener" title="Source on GitHub" aria-label="Source on GitHub">
+                    <span class="glyph" inner_html=GITHUB_MARK></span>
+                </a>
+                <a href=CRATE target="_blank" rel="noopener" title="df-pascal-core on crates.io" aria-label="df-pascal-core on crates.io">
+                    <Glyph icon=Icon::Package size=12 />
+                </a>
+            </span>
         </footer>
     }
 }

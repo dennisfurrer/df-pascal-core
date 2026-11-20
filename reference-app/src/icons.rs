@@ -38,6 +38,7 @@ pub enum Icon {
     BookOpen,
     CircleDot,
     ArrowUpRight,
+    Package,
 }
 
 impl Icon {
@@ -126,6 +127,9 @@ impl Icon {
             }
             Icon::CircleDot => r#"<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/>"#,
             Icon::ArrowUpRight => r#"<path d="M7 7h10v10"/><path d="M7 17 17 7"/>"#,
+            Icon::Package => {
+                r#"<path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><polyline points="3.29 7 12 12 20.71 7"/><path d="m7.5 4.27 9 5.15"/>"#
+            }
         }
     }
 }

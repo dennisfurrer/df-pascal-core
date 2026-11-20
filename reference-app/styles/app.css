@@ -540,6 +540,22 @@ dd {
   overflow: hidden;
 }
 
+.status-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-links a {
+  display: inline-flex;
+  color: var(--text-3);
+  transition: color 0.15s ease;
+}
+
+.status-links a:hover {
+  color: var(--text);
+}
+
 .status .num {
   font-size: 11px;
 }
