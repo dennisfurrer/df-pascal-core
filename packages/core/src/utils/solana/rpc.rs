@@ -11,8 +11,12 @@ use crate::utils::base64;
 use crate::utils::keys::{Pubkey, Signature};
 use crate::utils::{base58, lenient};
 
-/// Solana's public mainnet endpoint.
+/// Solana's public mainnet endpoint. It refuses requests sent from browsers (403).
 pub const MAINNET: &str = "https://api.mainnet-beta.solana.com";
+
+/// PublicNode's free mainnet endpoint: no API key, answers browsers (CORS), and serves every call
+/// here. It refuses `getTokenAccountBalance`, so [`Rpc::token_balance`] reads accounts instead.
+pub const PUBLICNODE: &str = "https://solana-rpc.publicnode.com";
 
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum RpcError {
@@ -127,37 +131,38 @@ impl<H: Http> Rpc<H> {
         Ok(answer.value.is_some())
     }
 
-    /// The token account's balance; `None` when it does not exist.
-    pub async fn token_balance(&self, account: &Pubkey) -> Result<Option<TokenBalance>, RpcError> {
+    /// An account's data; `None` when the account does not exist.
+    pub async fn account_data(&self, account: &Pubkey) -> Result<Option<Vec<u8>>, RpcError> {
         #[derive(Deserialize)]
-        struct Amount {
-            amount: String,
-            decimals: u8,
+        struct Info {
+            data: (String, String),
         }
         #[derive(Deserialize)]
         struct Wrapped {
-            value: Amount,
+            value: Option<Info>,
         }
-        match self
-            .call::<Wrapped>("getTokenAccountBalance", json!([account.to_base58(), { "commitment": "confirmed" }]))
-            .await
-        {
-            Ok(answer) => {
-                let amount = answer.value.amount.parse::<u64>().map_err(|error| RpcError::Unreadable {
-                    method: "getTokenAccountBalance",
-                    detail: error.to_string(),
-                })?;
-                Ok(Some(TokenBalance { amount, decimals: answer.value.decimals }))
-            }
-            // "could not find account": the account does not exist.
-            Err(RpcError::Refused { message, .. })
-                if message.to_ascii_lowercase().contains("could not find account") =>
-            {
-                Ok(None)
-            }
-            Err(RpcError::Refused { code: -32602, .. }) => Ok(None),
-            Err(error) => Err(error),
-        }
+        let answer: Wrapped = self
+            .call("getAccountInfo", json!([account.to_base58(), { "commitment": "confirmed", "encoding": "base64" }]))
+            .await?;
+        answer
+            .value
+            .map(|info| {
+                base64::decode(&info.data.0)
+                    .map_err(|error| RpcError::Unreadable { method: "getAccountInfo", detail: error.to_string() })
+            })
+            .transpose()
+    }
+
+    /// The token account's balance; `None` when it does not exist. Reads the token account and its
+    /// mint with `getAccountInfo`, which public endpoints serve without an API key, unlike
+    /// `getTokenAccountBalance`.
+    pub async fn token_balance(&self, account: &Pubkey) -> Result<Option<TokenBalance>, RpcError> {
+        let Some(data) = self.account_data(account).await? else { return Ok(None) };
+        let unreadable = |detail: &str| RpcError::Unreadable { method: "getAccountInfo", detail: detail.to_owned() };
+        let (mint, amount) = token_account(&data).ok_or_else(|| unreadable("not a token account"))?;
+        let mint_data = self.account_data(&mint).await?.ok_or_else(|| unreadable("the mint does not exist"))?;
+        let decimals = mint_decimals(&mint_data).ok_or_else(|| unreadable("not a mint"))?;
+        Ok(Some(TokenBalance { amount, decimals }))
     }
 
     /// Balance in lamports.
@@ -211,3 +216,23 @@ impl<H: Http> Rpc<H> {
         self.call("getBlockHeight", json!([{ "commitment": "confirmed" }])).await
     }
 }
+
+/// The mint and amount of an SPL token account: mint at bytes 0..32, amount (u64, little-endian) at
+/// bytes 64..72.
+pub fn token_account(data: &[u8]) -> Option<(Pubkey, u64)> {
+    let mint: [u8; 32] = data.get(0..32)?.try_into().ok()?;
+    let amount: [u8; 8] = data.get(64..72)?.try_into().ok()?;
+    Some((Pubkey::new(mint), u64::from_le_bytes(amount)))
+}
+
+/// The decimals of an SPL mint: byte 44.
+pub fn mint_decimals(data: &[u8]) -> Option<u8> {
+    if data.len() < 82 {
+        return None;
+    }
+    data.get(44).copied()
+}
+
+#[cfg(test)]
+#[path = "tests/rpc.rs"]
+mod tests;
