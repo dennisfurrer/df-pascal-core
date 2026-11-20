@@ -1,0 +1,67 @@
+[package]
+name = "df-pascal-core"
+description = "Pascal SDK for Rust: markets, books, trades, candles, accounts, orders, trading keys, withdrawals, deposits, referrals and websocket streams, with exact decimals and Ed25519 permits signed in Rust. Native and wasm."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+zeroize.workspace = true
+sha2.workspace = true
+curve25519-dalek.workspace = true
+ed25519-dalek = { workspace = true, optional = true }
+getrandom02 = { workspace = true, optional = true }
+reqwest = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true, features = ["rt", "sync", "time", "macros", "net"] }
+tokio-tungstenite = { workspace = true, optional = true }
+futures-util = { workspace = true, optional = true }
+wasm-bindgen = { workspace = true, optional = true }
+wasm-bindgen-futures = { workspace = true, optional = true }
+js-sys = { workspace = true, optional = true }
+web-sys = { workspace = true, optional = true, features = ["CloseEvent", "Headers", "MessageEvent", "RequestInit", "Response", "WebSocket"] }
+
+[features]
+default = ["sign", "native"]
+# Ed25519 signing and verification, and randomness for new trading keys. Without it, permits and
+# requests are still built, and signing is left to an external wallet.
+sign = ["dep:ed25519-dalek", "dep:getrandom02"]
+# HTTP and websocket for native programs (reqwest, tokio-tungstenite).
+native = ["dep:reqwest", "dep:tokio", "dep:tokio-tungstenite", "dep:futures-util"]
+# HTTP and websocket for the browser and Workers (fetch, WebSocket).
+web = ["dep:wasm-bindgen", "dep:wasm-bindgen-futures", "dep:js-sys", "dep:web-sys"]
+# The transports reject all writes: a POST to the write API returns `TransportError::Offline`
+# without sending anything. For test builds of dependent crates.
+offline = []
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test.workspace = true
+
+[[example]]
+name = "market_data"
+required-features = ["native"]
+
+[[example]]
+name = "place_order"
+required-features = ["native", "sign"]
+
+[[example]]
+name = "stream"
+required-features = ["native"]
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
